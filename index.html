@@ -97,34 +97,43 @@
     </div>
 
     <script>
-        function selectDuty() {
-            const allPeopleText = document.getElementById('allPeople').value;
-            const recentDutyText = document.getElementById('recentDuty').value;
-
-            const allPeople = allPeopleText.split(',')
-                .map(name => name.trim())
-                .filter(name => name.length > 0);
-
-            const recentDuty = recentDutyText.split(',')
-                .map(name => name.trim())
-                .filter(name => name.length > 0);
-
-            if (allPeople.length === 0) {
-                showResult("Ошибка: не введен список людей!");
-                return;
-            }
-
-            const available = allPeople.filter(person => !recentDuty.includes(person));
-
-            if (available.length === 0) {
-                showResult("Все недавно дежурили! Выберите из всех: " + allPeople.join(', '));
-                return;
-            }
-
-            const selected = available[Math.floor(Math.random() * available.length)];
-            showResult("Выбран дежурный: <strong>" + selected + "</strong>");
+     function selectDuty() {
+        const allPeopleText = document.getElementById('allPeople').value;
+        const recentDutyText = document.getElementById('recentDuty').value;
+        const count = parseInt(document.getElementById('count').value) || 1; // Получаем количество
+        
+        const allPeople = allPeopleText.split(',')
+            .map(name => name.trim())
+            .filter(name => name.length > 0);
+        
+        const recentDuty = recentDutyText.split(',')
+            .map(name => name.trim())
+            .filter(name => name.length > 0);
+    
+        if (allPeople.length === 0) {
+            showResult("Ошибка: не введен список людей!");
+            return;
         }
-
+        
+        const available = allPeople.filter(person => !recentDuty.includes(person));
+        
+        if (available.length === 0) {
+            showResult("Все недавно дежурили! Выберите из всех: " + allPeople.join(', '));
+            return;
+        }
+    
+        // Выбираем несколько человек
+        const selected = [];
+        const availableCopy = [...available]; // Копируем массив
+        
+        for (let i = 0; i < Math.min(count, availableCopy.length); i++) {
+            const randomIndex = Math.floor(Math.random() * availableCopy.length);
+            selected.push(availableCopy[randomIndex]);
+            availableCopy.splice(randomIndex, 1); // Удаляем выбранного
+        }
+        
+        showResult("Выбраны дежурные: <strong>" + selected.join(', ') + "</strong>");
+    }
         function showResult(message) {
             const resultDiv = document.getElementById('result');
             resultDiv.innerHTML = message;
