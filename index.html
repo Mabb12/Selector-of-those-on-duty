@@ -41,7 +41,7 @@
             cursor: pointer;
             font-size: 16px;
             display: block;
-            margin: 0 auto;
+            margin: 20px auto;
             transition: background-color 0.3s;
         }
         button:hover {
@@ -66,29 +66,52 @@
             padding: 2px 5px;
             border-radius: 3px;
         }
+        .count-input {
+            width: 60px;
+            padding: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .input-group {
+            margin-bottom: 10px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Выбор дежурных</h1>
-
-        <label for="allPeople">Все люди (через запятую):</label>
-        <textarea id="allPeople" placeholder="Например: Анна, Умар, Виктор, Луи"></textarea>
-
-        <label for="recentDuty">Недавно дежурили (через запятую):</label>
-        <textarea id="recentDuty" placeholder="Например: Луи, Анна"></textarea>
-        <label for="count">Количество дежурных:</label>
-        <input type="number" id="count" min="1" value="1" style="width: 60px; padding: 8px; margin-bottom: 15px; display: block;">
-
+        
+        <div class="input-group">
+            <label for="allPeople">Все люди (через запятую):</label>
+            <textarea id="allPeople" placeholder="Например: Анна, Борис, Виктор, Дарья"></textarea>
+        </div>
+        
+        <div class="input-group">
+            <label for="recentDuty">Недавно дежурили (через запятую):</label>
+            <textarea id="recentDuty" placeholder="Например: Борис, Дарья"></textarea>
+        </div>
+        
+        <div class="input-group">
+            <label for="count">Количество дежурных:</label>
+            <input type="number" id="count" class="count-input" min="1" value="1">
+        </div>
+        
         <button onclick="selectDuty()">Выбрать дежурных</button>
-
+        
         <div id="result" class="result"></div>
-
+        
         <div class="instructions">
             <h3>Как пользоваться:</h3>
             <ol>
                 <li>Введите в первое поле <span class="highlight">всех людей</span>, которые могут дежурить.</li>
                 <li>Во второе поле введите тех, кто <span class="highlight">недавно дежурил</span> (их не выберут).</li>
+                <li>Укажите <span class="highlight">количество дежурных</span>.</li>
                 <li>Нажмите кнопку — система случайно выберет дежурных из доступных.</li>
                 <li>Результат появится ниже.</li>
             </ol>
@@ -97,43 +120,52 @@
     </div>
 
     <script>
-     function selectDuty() {
-        const allPeopleText = document.getElementById('allPeople').value;
-        const recentDutyText = document.getElementById('recentDuty').value;
-        const count = parseInt(document.getElementById('count').value) || 1; // Получаем количество
-        
-        const allPeople = allPeopleText.split(',')
-            .map(name => name.trim())
-            .filter(name => name.length > 0);
-        
-        const recentDuty = recentDutyText.split(',')
-            .map(name => name.trim())
-            .filter(name => name.length > 0);
-    
-        if (allPeople.length === 0) {
-            showResult("Ошибка: не введен список людей!");
-            return;
+        function selectDuty() {
+            const allPeopleText = document.getElementById('allPeople').value;
+            const recentDutyText = document.getElementById('recentDuty').value;
+            const count = parseInt(document.getElementById('count').value) || 1;
+            
+            const allPeople = allPeopleText.split(',')
+                .map(name => name.trim())
+                .filter(name => name.length > 0);
+            
+            const recentDuty = recentDutyText.split(',')
+                .map(name => name.trim())
+                .filter(name => name.length > 0);
+            
+            if (allPeople.length === 0) {
+                showResult("Ошибка: не введен список людей!");
+                return;
+            }
+            
+            const available = allPeople.filter(person => !recentDuty.includes(person));
+            
+            if (available.length === 0) {
+                showResult("Все недавно дежурили! Выберите из всех: " + allPeople.join(', '));
+                return;
+            }
+            
+            const selected = [];
+            const availableCopy = [...available];
+            
+            const selectCount = Math.min(count, availableCopy.length);
+            
+            for (let i = 0; i < selectCount; i++) {
+                const randomIndex = Math.floor(Math.random() * availableCopy.length);
+                selected.push(availableCopy[randomIndex]);
+                availableCopy.splice(randomIndex, 1);
+            }
+            
+            let message;
+            if (selectCount === 1) {
+                message = "Выбран дежурный: <strong>" + selected[0] + "</strong>";
+            } else {
+                message = "Выбраны дежурные (" + selectCount + " чел.): <strong>" + selected.join(', ') + "</strong>";
+            }
+            
+            showResult(message);
         }
         
-        const available = allPeople.filter(person => !recentDuty.includes(person));
-        
-        if (available.length === 0) {
-            showResult("Все недавно дежурили! Выберите из всех: " + allPeople.join(', '));
-            return;
-        }
-    
-        // Выбираем несколько человек
-        const selected = [];
-        const availableCopy = [...available]; // Копируем массив
-        
-        for (let i = 0; i < Math.min(count, availableCopy.length); i++) {
-            const randomIndex = Math.floor(Math.random() * availableCopy.length);
-            selected.push(availableCopy[randomIndex]);
-            availableCopy.splice(randomIndex, 1); // Удаляем выбранного
-        }
-        
-        showResult("Выбраны дежурные: <strong>" + selected.join(', ') + "</strong>");
-    }
         function showResult(message) {
             const resultDiv = document.getElementById('result');
             resultDiv.innerHTML = message;
