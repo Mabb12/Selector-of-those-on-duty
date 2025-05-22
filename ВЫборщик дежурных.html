@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Выбор дежурных</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            resize: vertical;
+            min-height: 80px;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            display: block;
+            margin: 0 auto;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e8f4fc;
+            border-radius: 4px;
+            display: none;
+        }
+        .instructions {
+            margin-top: 30px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-left: 4px solid #3498db;
+            font-size: 14px;
+        }
+        .highlight {
+            background-color: #fffacd;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Выбор дежурных</h1>
+
+        <label for="allPeople">Все люди (через запятую):</label>
+        <textarea id="allPeople" placeholder="Например: Анна, Умар, Виктор, Луи"></textarea>
+
+        <label for="recentDuty">Недавно дежурили (через запятую):</label>
+        <textarea id="recentDuty" placeholder="Например: Луи, Анна"></textarea>
+
+        <button onclick="selectDuty()">Выбрать дежурных</button>
+
+        <div id="result" class="result"></div>
+
+        <div class="instructions">
+            <h3>Как пользоваться:</h3>
+            <ol>
+                <li>Введите в первое поле <span class="highlight">всех людей</span>, которые могут дежурить.</li>
+                <li>Во второе поле введите тех, кто <span class="highlight">недавно дежурил</span> (их не выберут).</li>
+                <li>Нажмите кнопку — система случайно выберет дежурных из доступных.</li>
+                <li>Результат появится ниже.</li>
+            </ol>
+            <p><small>Данные не сохраняются — страницу можно просто закрыть.</small></p>
+        </div>
+    </div>
+
+    <script>
+        function selectDuty() {
+            const allPeopleText = document.getElementById('allPeople').value;
+            const recentDutyText = document.getElementById('recentDuty').value;
+
+            const allPeople = allPeopleText.split(',')
+                .map(name => name.trim())
+                .filter(name => name.length > 0);
+
+            const recentDuty = recentDutyText.split(',')
+                .map(name => name.trim())
+                .filter(name => name.length > 0);
+
+            if (allPeople.length === 0) {
+                showResult("Ошибка: не введен список людей!");
+                return;
+            }
+
+            const available = allPeople.filter(person => !recentDuty.includes(person));
+
+            if (available.length === 0) {
+                showResult("Все недавно дежурили! Выберите из всех: " + allPeople.join(', '));
+                return;
+            }
+
+            const selected = available[Math.floor(Math.random() * available.length)];
+            showResult("Выбран дежурный: <strong>" + selected + "</strong>");
+        }
+
+        function showResult(message) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = message;
+            resultDiv.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
